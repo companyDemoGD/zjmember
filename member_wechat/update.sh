@@ -1,4 +1,4 @@
-cd /root/member_wechat
+cd G:/github/zjmember/member_wechat
 
 date > git.log
 git pull >> git.log
