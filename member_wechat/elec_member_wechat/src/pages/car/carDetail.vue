@@ -49,7 +49,7 @@
         </div>
       </div>
       <div style="color:white;font-size:0.5rem;background-color:#46D0C3;width:30%;height:100%;">
-        <div style="padding:0.3rem;">立即支付</div>
+        <div style="padding:0.3rem;" @click="wxpayClik">立即支付</div>
       </div>
     </div>
   </router-link>
@@ -61,6 +61,12 @@ import {
   PopupRadio
 } from 'vux'
 
+
+
+import pay from '@/components/common/wxpay.vue'
+const {
+  WxPay
+} = pay
 export default {
   components: {
     Group,
@@ -72,10 +78,51 @@ export default {
       licenceNum: []
     }
   },
-  mounted(){
+  mounted() {
     let arr = this.$route.query.car_number
-    debugger
     this.licenceNum = arr
+    let bbb = WxPay
+  },
+
+  methods: {
+     async wxpayClik() {
+
+      let { wx_openid } = this.$route.query
+  debugger
+      let wx_app_id
+      try{
+        wx_app_id = 'wx3041b222eaad5c8a'
+        // wx_app_id = (await this.$http.get('http://jiayuanmember.dorm9tech.com/wx/appid')).data.wx_app_id
+      }catch(e){
+      }
+
+      if(!wx_openid){
+        const { redirect } = this.$route.query
+        if(redirect){
+          localStorage.setItem('redirect', redirect)
+        }
+        const redirectUri = `http://${location.hostname}/wx/code2openid`
+        location.href = `http://open.weixin.qq.com/connect/oauth2/authorize?appid=${wx_app_id}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect`
+        return;
+      }else{
+        WxPay.getAccessToken({
+          notify_url: 'http://demo.com/', //微信支付完成后的回调
+          out_trade_no: new Date().getTime(), //订单号
+          attach: '名称',
+          body: '购买信息',
+          total_fee: '1', // 此处的额度为分
+          spbill_create_ip: '192',
+          wx_code: wx_openid,
+        }, function(error, responseData) {
+          res.render('payment', {
+            title: '微信支付',
+            wxPayParams: JSON.stringify('123'),
+            //userInfo : userInfo
+          });
+        })
+      }
+
+    }
   }
 }
 </script>
